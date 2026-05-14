@@ -35,6 +35,11 @@ const WeatherPlan = sequelize.define('WeatherPlan', {
   aiWeatherPlan: {
     type: DataTypes.TEXT
   },
+  aiAnalysis: {
+    type: DataTypes.JSONB,
+    defaultValue: null,
+    comment: 'Structured JSON AI analysis results'
+  },
   status: {
     type: DataTypes.STRING,
     defaultValue: 'active'

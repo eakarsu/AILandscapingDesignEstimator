@@ -24,6 +24,7 @@ const navItems = [
   { path: '/calculator', label: 'Calculator', icon: '🧮' },
   { path: '/reports', label: 'Reports', icon: '📊' },
   { path: '/profile', label: 'Profile', icon: '⚙️' },
+  { path: '/ai-tools', label: 'AI Tools', icon: '✨' },
 ];
 
 function Layout({ children, onLogout }) {

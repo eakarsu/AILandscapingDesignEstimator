@@ -35,6 +35,11 @@ const PhotoGallery = sequelize.define('PhotoGallery', {
   aiAnalysis: {
     type: DataTypes.TEXT
   },
+  aiAnalysisJson: {
+    type: DataTypes.JSONB,
+    defaultValue: null,
+    comment: 'Structured JSON AI analysis results'
+  },
   status: {
     type: DataTypes.STRING,
     defaultValue: 'active'

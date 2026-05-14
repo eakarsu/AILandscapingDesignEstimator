@@ -32,6 +32,11 @@ const ClientProposal = sequelize.define('ClientProposal', {
   aiProposal: {
     type: DataTypes.TEXT
   },
+  aiAnalysis: {
+    type: DataTypes.JSONB,
+    defaultValue: null,
+    comment: 'Structured JSON AI analysis results'
+  },
   status: {
     type: DataTypes.STRING,
     defaultValue: 'draft'

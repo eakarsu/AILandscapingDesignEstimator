@@ -41,6 +41,11 @@ const Supplier = sequelize.define('Supplier', {
   aiSupplierAnalysis: {
     type: DataTypes.TEXT
   },
+  aiAnalysis: {
+    type: DataTypes.JSONB,
+    defaultValue: null,
+    comment: 'Structured JSON AI analysis results'
+  },
   status: {
     type: DataTypes.STRING,
     defaultValue: 'active'
