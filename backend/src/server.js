@@ -70,6 +70,10 @@ app.use('/api/time-entries', timeEntryRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/ai', aiRoutes);
 
+// Custom Views (Landscape Views) - mounted BEFORE 404
+const customViewsRoutes = require('./routes/customViews');
+app.use('/api/custom-views', customViewsRoutes);
+
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });

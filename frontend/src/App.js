@@ -45,6 +45,7 @@ import CalculatorPage from './pages/CalculatorPage';
 import ReportsPage from './pages/ReportsPage';
 import ProfilePage from './pages/ProfilePage';
 import AIToolsPage from './pages/AIToolsPage';
+import CustomViewsPage from './pages/CustomViewsPage';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -115,6 +116,7 @@ function App() {
           <Route path="/reports" element={<ReportsPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/ai-tools" element={<AIToolsPage />} />
+          <Route path="/custom-views" element={<CustomViewsPage />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </Layout>
