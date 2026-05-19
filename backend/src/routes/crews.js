@@ -2,12 +2,23 @@ const express = require('express');
 const CrewSchedule = require('../models/CrewSchedule');
 const { queryOpenRouter } = require('../services/openrouter');
 const auth = require('../middleware/auth');
+const { aiRateLimiter } = require('../middleware/rateLimiter');
 const router = express.Router();
 
 router.get('/', auth, async (req, res) => {
   try {
-    const crews = await CrewSchedule.findAll({ order: [['createdAt', 'DESC']] });
-    res.json(crews);
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 20));
+    const offset = (page - 1) * limit;
+    const { count, rows } = await CrewSchedule.findAndCountAll({
+      order: [['createdAt', 'DESC']],
+      limit,
+      offset,
+    });
+    res.json({
+      data: rows,
+      pagination: { total: count, page, limit, totalPages: Math.ceil(count / limit) },
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -18,6 +29,28 @@ router.get('/:id', auth, async (req, res) => {
     const crew = await CrewSchedule.findByPk(req.params.id);
     if (!crew) return res.status(404).json({ error: 'Crew schedule not found' });
     res.json(crew);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.get('/:id/ai-analysis', auth, async (req, res) => {
+  try {
+    const crew = await CrewSchedule.findByPk(req.params.id, {
+      attributes: ['id', 'title', 'status', 'aiScheduleOptimization', 'aiAnalysis', 'updatedAt'],
+    });
+    if (!crew) return res.status(404).json({ error: 'Crew schedule not found' });
+    if (!crew.aiAnalysis && !crew.aiScheduleOptimization) {
+      return res.status(404).json({ error: 'No AI analysis available. Run POST /:id/optimize first.' });
+    }
+    res.json({
+      crewId: crew.id,
+      title: crew.title,
+      status: crew.status,
+      structured: crew.aiAnalysis || null,
+      rawText: crew.aiScheduleOptimization || null,
+      generatedAt: crew.updatedAt,
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -54,27 +87,33 @@ router.delete('/:id', auth, async (req, res) => {
   }
 });
 
-router.post('/:id/optimize', auth, async (req, res) => {
+router.post('/:id/optimize', auth, aiRateLimiter, async (req, res) => {
   try {
     const crew = await CrewSchedule.findByPk(req.params.id);
     if (!crew) return res.status(404).json({ error: 'Crew schedule not found' });
 
-    const systemPrompt = 'You are an expert crew scheduling manager for landscaping businesses. Provide detailed, professional schedule optimization recommendations with efficiency improvements, resource allocation strategies, and productivity metrics. Format your response with clear sections using headers.';
+    const systemPrompt = 'You are an expert crew scheduling manager for landscaping businesses. Respond with valid JSON containing: taskSequence (array of {task, duration, assignedTo}), timeAllocation (object), crewRoles (array), travelEfficiency (object with route and savings), breakSchedule (array), weatherContingency (object), productivityScore (number 0-100), and recommendations (array). No markdown fences.';
     const userPrompt = `Optimize the following crew schedule:
-- Crew Name: ${crew.crewName}
+- Crew Leader: ${crew.crewLeader}
 - Crew Size: ${crew.crewSize}
-- Scheduled Date: ${crew.scheduledDate}
-- Start Time: ${crew.startTime}
-- End Time: ${crew.endTime}
-- Job Type: ${crew.jobType}
-- Location: ${crew.location}
-- Priority: ${crew.priority}
-- Notes: ${crew.notes}
+- Project: ${crew.projectName}
+- Date: ${crew.assignedDate}
+- Start: ${crew.startTime} - End: ${crew.endTime}
+- Tasks: ${crew.taskDescription}
+- Skills Required: ${crew.skillsRequired}`;
 
-Provide a comprehensive schedule optimization including: optimal task sequencing, time allocation per task, crew member role assignments, travel route efficiency, break scheduling, weather contingency plans, and productivity improvement suggestions.`;
+    const result = await queryOpenRouter(systemPrompt, userPrompt);
 
-    const aiResponse = await queryOpenRouter(systemPrompt, userPrompt);
-    await crew.update({ aiScheduleOptimization: aiResponse });
+    if (!result.success) {
+      return res.status(result.fallback ? 503 : 502).json({
+        error: result.error,
+        fallback: result.fallback || false,
+      });
+    }
+
+    const updateData = { aiScheduleOptimization: result.data };
+    if (result.structured) updateData.aiAnalysis = result.structured;
+    await crew.update(updateData);
     res.json(crew);
   } catch (error) {
     res.status(500).json({ error: error.message });

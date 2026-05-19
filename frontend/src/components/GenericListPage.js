@@ -9,15 +9,23 @@ function GenericListPage({ title, icon, endpoint, columns, formFields, defaultVa
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState(defaultValues || {});
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [pagination, setPagination] = useState(null);
 
   useEffect(() => {
-    fetchItems();
-  }, []);
+    fetchItems(page);
+  }, [page]);
 
-  const fetchItems = async () => {
+  const fetchItems = async (p = 1) => {
     try {
-      const res = await api.get(endpoint);
-      setItems(res.data);
+      const res = await api.get(`${endpoint}?page=${p}&limit=20`);
+      if (res.data && res.data.data && res.data.pagination) {
+        setItems(res.data.data);
+        setPagination(res.data.pagination);
+      } else {
+        setItems(Array.isArray(res.data) ? res.data : []);
+        setPagination(null);
+      }
     } catch (err) {
       toast.error('Failed to load data');
     } finally {
@@ -32,7 +40,7 @@ function GenericListPage({ title, icon, endpoint, columns, formFields, defaultVa
       toast.success('Created successfully!');
       setShowModal(false);
       setFormData(defaultValues || {});
-      fetchItems();
+      fetchItems(page);
     } catch (err) {
       toast.error('Failed to create');
     }
@@ -81,6 +89,28 @@ function GenericListPage({ title, icon, endpoint, columns, formFields, defaultVa
           </tbody>
         </table>
       </div>
+
+      {pagination && pagination.totalPages > 1 && (
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '16px', padding: '16px 0', color: '#6b7c6b' }}>
+          <button
+            className="btn btn-secondary"
+            style={{ width: 'auto' }}
+            disabled={page <= 1}
+            onClick={() => setPage(p => Math.max(1, p - 1))}
+          >
+            ← Prev
+          </button>
+          <span>Page {pagination.page} of {pagination.totalPages} ({pagination.total} total)</span>
+          <button
+            className="btn btn-secondary"
+            style={{ width: 'auto' }}
+            disabled={page >= pagination.totalPages}
+            onClick={() => setPage(p => p + 1)}
+          >
+            Next →
+          </button>
+        </div>
+      )}
 
       {showModal && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}>

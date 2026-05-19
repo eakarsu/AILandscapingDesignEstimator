@@ -38,6 +38,11 @@ const CostEstimate = sequelize.define('CostEstimate', {
   aiBreakdown: {
     type: DataTypes.TEXT
   },
+  aiAnalysis: {
+    type: DataTypes.JSONB,
+    defaultValue: null,
+    comment: 'Structured JSON AI analysis results'
+  },
   status: {
     type: DataTypes.STRING,
     defaultValue: 'draft'
