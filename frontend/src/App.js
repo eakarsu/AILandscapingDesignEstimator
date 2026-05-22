@@ -46,6 +46,12 @@ import ReportsPage from './pages/ReportsPage';
 import ProfilePage from './pages/ProfilePage';
 import AIToolsPage from './pages/AIToolsPage';
 import CustomViewsPage from './pages/CustomViewsPage';
+import PlantSurvivabilityZoneCheck from './pages/PlantSurvivabilityZoneCheck';
+
+import CodexCustomVizFeature from './pages/CodexCustomVizFeature';
+import CodexOperationsFeature from './pages/CodexOperationsFeature';
+
+import TimelineView from './pages/TimelineView';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -75,6 +81,10 @@ function App() {
     <Router>
       <Layout onLogout={handleLogout}>
         <Routes>
+        <Route path="/insights/timeline" element={<TimelineView />} />
+        <Route path="/codex/custom-viz" element={<CodexCustomVizFeature />} />
+        <Route path="/codex/operations" element={<CodexOperationsFeature />} />
+
           <Route path="/" element={<Dashboard />} />
           <Route path="/designs" element={<DesignsPage />} />
           <Route path="/designs/:id" element={<DesignDetail />} />
@@ -117,6 +127,7 @@ function App() {
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/ai-tools" element={<AIToolsPage />} />
           <Route path="/custom-views" element={<CustomViewsPage />} />
+          <Route path="/plant-survivability-zone-check" element={<PlantSurvivabilityZoneCheck />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </Layout>

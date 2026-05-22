@@ -69,6 +69,7 @@ app.use('/api/expenses', expenseRoutes);
 app.use('/api/time-entries', timeEntryRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/ai', aiRoutes);
+app.use('/api/plant-survivability-zone-check', require('./routes/plantSurvivabilityZoneCheck'));
 
 // Custom Views (Landscape Views) - mounted BEFORE 404
 const customViewsRoutes = require('./routes/customViews');
