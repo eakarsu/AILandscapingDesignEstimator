@@ -2,6 +2,9 @@ const jwt = require('jsonwebtoken');
 require('dotenv').config({ path: require('path').resolve(__dirname, '../../../.env') });
 
 const authMiddleware = (req, res, next) => {
+  if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) {
+    return res.status(503).json({ error: 'Authentication is not configured' });
+  }
   const token = req.header('Authorization')?.replace('Bearer ', '');
 
   if (!token) {

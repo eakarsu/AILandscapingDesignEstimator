@@ -25,11 +25,6 @@ function Login({ onLogin }) {
     }
   };
 
-  const autoFill = () => {
-    setEmail('admin@landscaping.com');
-    setPassword('password123');
-  };
-
   return (
     <div className="login-container">
       <div className="login-card">
@@ -65,9 +60,6 @@ function Login({ onLogin }) {
           </button>
         </form>
 
-        <button className="btn auto-fill-btn" onClick={autoFill}>
-          Quick Demo Login (Auto-Fill Credentials)
-        </button>
       </div>
     </div>
   );
