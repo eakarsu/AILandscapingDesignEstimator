@@ -48,9 +48,11 @@ async function queryOpenRouter(systemPrompt, userPrompt) {
   });
 
   return new Promise((resolve) => {
+    const baseUrl = new URL(process.env.OPENROUTER_BASE_URL || 'https://openrouter.ai/api/v1');
     const options = {
-      hostname: 'openrouter.ai',
-      path: '/api/v1/chat/completions',
+      hostname: baseUrl.hostname,
+      port: baseUrl.port || undefined,
+      path: `${baseUrl.pathname.replace(/\/$/, '')}/chat/completions`,
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -66,16 +68,20 @@ async function queryOpenRouter(systemPrompt, userPrompt) {
       res.on('end', () => {
         try {
           const parsed = JSON.parse(data);
-          if (parsed.error) {
+          if (res.statusCode < 200 || res.statusCode >= 300 || parsed.error) {
             resolve({
               success: false,
               fallback: false,
-              error: parsed.error.message || 'OpenRouter API error',
+              error: parsed.error?.message || `OpenRouter request failed with HTTP ${res.statusCode}`,
               data: null,
               structured: null,
             });
           } else {
             const content = parsed.choices?.[0]?.message?.content || '';
+            if (!content.trim()) {
+              resolve({ success: false, fallback: false, error: 'OpenRouter returned empty content', data: null, structured: null });
+              return;
+            }
             resolve({
               success: true,
               fallback: false,
