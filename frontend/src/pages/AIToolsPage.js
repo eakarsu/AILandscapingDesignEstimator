@@ -1,5 +1,8 @@
+
+import FullAIExamples, { useFullAIExamples } from "../components/FullAIExamples.jsx";
 import React, { useState } from 'react';
 import api from '../services/api';
+import AIReport from '../components/AIReport';
 
 const TOOLS = [
   {
@@ -69,6 +72,8 @@ const TOOLS = [
 ];
 
 function AIToolsPage() {
+  const fullAIExamples = useFullAIExamples();
+
   const [active, setActive] = useState(TOOLS[0].key);
   const [inputs, setInputs] = useState({});
   const [loading, setLoading] = useState(false);
@@ -108,7 +113,7 @@ function AIToolsPage() {
   };
 
   return (
-    <div>
+    <div data-full-ai-workspace="AIToolsPage"><FullAIExamples controller={fullAIExamples} disabled={Boolean(loading)} />
       <div className="page-header">
         <h1>✨ AI Tools</h1>
       </div>
@@ -146,14 +151,14 @@ function AIToolsPage() {
                 rows={4}
                 value={inputs[field.key] || ''}
                 onChange={e => handleChange(field.key, e.target.value)}
-                placeholder={field.placeholder || ''}
+                placeholder={field.placeholder || ''} data-full-ai-field={fullAIExamples.bind({ current: inputs[field.key] || '', change: e => handleChange(field.key, e.target.value), label: "inputs[field.key]", manual: false, json: false }, "p1-5369", [(typeof field === 'object' ? field?.key ?? field?.name ?? field?.id ?? '' : field),field.key].join(":"))}
               />
             ) : (
               <input
                 type={field.type || 'text'}
                 value={inputs[field.key] || ''}
                 onChange={e => handleChange(field.key, e.target.value)}
-                placeholder={field.placeholder || ''}
+                placeholder={field.placeholder || ''} data-full-ai-field={fullAIExamples.bind({ current: inputs[field.key] || '', change: e => handleChange(field.key, e.target.value), label: "inputs[field.key]", manual: false, json: false }, "p1-5627", [(typeof field === 'object' ? field?.key ?? field?.name ?? field?.id ?? '' : field),field.key].join(":"))}
               />
             )}
           </div>
@@ -174,14 +179,7 @@ function AIToolsPage() {
           </div>
         )}
 
-        {result && (
-          <div style={{ marginTop: '20px', padding: '20px', background: '#f0f4f3', borderRadius: '8px', border: '1px solid #d4e5d4' }}>
-            <h3 style={{ color: '#2d6a4f', marginBottom: '12px' }}>Result</h3>
-            <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', margin: 0, fontSize: '13px' }}>
-              {typeof result === 'string' ? result : JSON.stringify(result, null, 2)}
-            </pre>
-          </div>
-        )}
+        <AIReport response={result} title={tool.label} />
       </div>
     </div>
   );

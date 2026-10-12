@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import api from '../services/api';
 import AIResponseDisplay from '../components/AIResponseDisplay';
+import AIReport from '../components/AIReport';
 
 const fields = [
   { key: 'title', label: 'Title' },
@@ -236,6 +237,16 @@ function ProjectDetail() {
         <div className="detail-card" style={{ marginTop: '16px' }}>
           <h3 style={{ marginBottom: '16px', color: '#22c55e' }}>🌿 Plant Recommendation</h3>
           <form onSubmit={handlePlantRecommend}>
+            <div className="detail-actions" style={{ flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
+              {[
+                { label: 'Pacific Northwest garden', region: 'Pacific Northwest, USDA Zone 8b', days: 21 },
+                { label: 'Northeast pollinator bed', region: 'Northeast, USDA Zone 6b', days: 35 },
+                { label: 'Southwest drought tolerant', region: 'Southwest, USDA Zone 9a', days: 49 },
+              ].map((preset) => <button key={preset.label} type="button" className="btn btn-secondary" disabled={plantLoading} onClick={() => {
+                setPlantRegion(preset.region);
+                setPlantStartDate(new Date(Date.now() + preset.days * 86400000).toISOString().slice(0, 10));
+              }}>{preset.label}</button>)}
+            </div>
             <div className="form-group">
               <label>Region / Climate Zone *</label>
               <input value={plantRegion} onChange={e => setPlantRegion(e.target.value)} placeholder="e.g., Pacific Northwest, USDA Zone 8b" required />
@@ -286,6 +297,7 @@ function ProjectDetail() {
               </ul>
             </div>
           )}
+          <AIReport response={bidResult.structured} title="Full Bid Score Analysis" />
         </div>
       )}
       {bidResult && !bidResult.structured && (
@@ -321,6 +333,7 @@ function ProjectDetail() {
               </div>
             ))}
           </div>
+          <AIReport response={plantResult.structured} title="Full Plant Recommendations" />
         </div>
       )}
       {plantResult && !plantResult.structured && (
